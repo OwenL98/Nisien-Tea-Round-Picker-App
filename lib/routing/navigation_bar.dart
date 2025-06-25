@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nisien_tea_round_picker_app/pages/home.dart';
+import 'package:nisien_tea_round_picker_app/pages/home_page.dart';
+import 'package:nisien_tea_round_picker_app/pages/participants_page.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
@@ -34,7 +35,11 @@ class _MyNavBarState extends State<NavBar> {
         ],
       ),
       body:
-          <Widget>[HomePage(), Placeholder(), Placeholder()][currentPageIndex],
+          <Widget>[
+            HomePage(),
+            ParticipantsPage(),
+            Placeholder(),
+          ][currentPageIndex],
     );
   }
 }
