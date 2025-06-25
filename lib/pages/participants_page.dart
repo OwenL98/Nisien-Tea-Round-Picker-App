@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:nisien_tea_round_picker_app/common/debuncer.dart';
 import 'package:nisien_tea_round_picker_app/data/participant_storage.dart';
 import 'package:nisien_tea_round_picker_app/domain/participant.dart';
-import 'package:nisien_tea_round_picker_app/domain/participant_list.dart';
 
 class ParticipantsPage extends StatelessWidget {
   const ParticipantsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ParticipantsPageBody(
-      participantListStorage: ParticipantListStorage(),
+    return Scaffold(
+      appBar: AppBar(centerTitle: true, title: Text('Team')),
+      body: ParticipantsPageBody(
+        participantListStorage: ParticipantListStorage(),
+      ),
     );
   }
 }
@@ -24,17 +27,28 @@ class ParticipantsPageBody extends StatefulWidget {
 }
 
 class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
-  List<Participant>? participantList;
+  final controller = TextEditingController();
+  final Debouncer _debouncer = Debouncer(milliseconds: 500);
+  final FocusNode _focusNode = FocusNode();
+  List<Participant> participantList = [];
 
   void readParticipantListFromStorage() async {
-    var file = await widget.participantListStorage.getFile();
-    if (file.existsSync()) {
-      var storedParticipantList =
-          await widget.participantListStorage.readParticipantList();
-      setState(() {
-        participantList = storedParticipantList.participantList;
-      });
-    }
+    var storedParticipantList =
+        await widget.participantListStorage.readParticipantList();
+    setState(() {
+      participantList = storedParticipantList.participantList;
+    });
+  }
+
+  void addParticipantToList(Participant participant) async {
+    await widget.participantListStorage.writeParticipantList(participant);
+    readParticipantListFromStorage();
+  }
+
+  @override
+  void initState() {
+    readParticipantListFromStorage();
+    super.initState();
   }
 
   @override
@@ -44,14 +58,53 @@ class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
+            flex: 5,
             child: ListView.builder(
-              itemCount: participantList!.length,
+              itemCount: participantList.length,
               shrinkWrap: true,
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               itemBuilder: (context, index) {
-                final participant = participantList![index];
+                final participant = participantList[index];
                 return ListTile(title: Text(participant.name));
               },
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+              child: TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  prefixIcon: IconButton(
+                    onPressed:
+                        () => _debouncer.run(() {
+                          addParticipantToList(
+                            Participant(
+                              name: controller.text,
+                              favouriteDrink: '',
+                            ),
+                          );
+                          controller.text = '';
+                        }),
+                    icon: Icon(Icons.check),
+                  ),
+                  labelText: 'Enter team member name',
+                ),
+                onSubmitted: (value) {
+                  _debouncer.run(() {
+                    addParticipantToList(
+                      Participant(name: controller.text, favouriteDrink: ''),
+                    );
+                    controller.text = '';
+                  });
+                },
+                focusNode: _focusNode,
+                keyboardType: TextInputType.text,
+                onChanged: (value) {
+                  controller.text = value;
+                },
+              ),
             ),
           ),
         ],

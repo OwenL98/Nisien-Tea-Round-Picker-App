@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nisien_tea_round_picker_app/common/debuncer.dart';
 import 'package:nisien_tea_round_picker_app/data/participant_storage.dart';
 import 'package:nisien_tea_round_picker_app/domain/participant.dart';
-import 'package:nisien_tea_round_picker_app/domain/participant_list.dart';
 import 'package:nisien_tea_round_picker_app/external/tea_round_picker.dart';
 
 class HomePage extends StatelessWidget {
@@ -27,21 +25,12 @@ class HomePageBody extends StatefulWidget {
 }
 
 class _HomePageBodyState extends State<HomePageBody> {
-  final controller = TextEditingController();
-  final Debouncer _debouncer = Debouncer(milliseconds: 500);
-  final FocusNode _focusNode = FocusNode();
   List<Participant> participantList = [];
 
   var nameList = <String>[];
   var selectedName = '';
 
-  void addToNameList(String name) {
-    nameList.add(name);
-
-    setState(() {});
-  }
-
-  void generateName() async {
+  void pickTeaMaker() async {
     var name = await picker(nameList);
 
     setState(() {
@@ -52,13 +41,9 @@ class _HomePageBodyState extends State<HomePageBody> {
   void readParticipantListFromStorage() async {
     var storedParticipantList =
         await widget.participantListStorage.readParticipantList();
-
-    print('storedList: ${storedParticipantList}');
     setState(() {
       participantList = storedParticipantList.participantList;
     });
-
-    print('storedLocal: ${participantList}');
   }
 
   void addParticipantToList(Participant participant) async {
@@ -67,20 +52,17 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   bool isListNotEmpty() {
-    // print('length ${participantList.participantList.length}');
-    // return participantList.participantList.isNotEmpty;
-    return true;
+    return participantList.isNotEmpty;
   }
 
   @override
   void initState() {
-    //readParticipantListFromStorage();
+    readParticipantListFromStorage();
     super.initState();
   }
 
   @override
   void dispose() {
-    controller.dispose();
     super.dispose();
   }
 
@@ -102,55 +84,27 @@ class _HomePageBodyState extends State<HomePageBody> {
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 itemBuilder: (context, index) {
                   final participant = participantList[index];
-                  return ListTile(title: Text(participant.name));
+                  return ListTile(
+                    title: Text(participant.name),
+                    onTap: () {
+                      nameList.add(participant.name);
+                      setState(() {});
+                    },
+                  );
                 },
               ),
             ),
           ),
           Expanded(
-            flex: 1,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
-              child: TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  prefixIcon: IconButton(
-                    onPressed:
-                        () => _debouncer.run(() {
-                          addParticipantToList(
-                            Participant(
-                              name: controller.text,
-                              favouriteDrink: '',
-                            ),
-                          );
-                          controller.text = '';
-                        }),
-                    icon: Icon(Icons.check),
-                  ),
-                  labelText: 'Enter team member name',
-                ),
-                onSubmitted: (value) {
-                  _debouncer.run(() {
-                    addToNameList(controller.text);
-                    controller.text = '';
-                  });
-                },
-                focusNode: _focusNode,
-                keyboardType: TextInputType.text,
-                onChanged: (value) {
-                  controller.text = value;
-                },
-              ),
+            child: TextButton(
+              onPressed: () {
+                setState(() {
+                  selectedName = '';
+                });
+                pickTeaMaker();
+              },
+              child: Text('Pick Tea Maker'),
             ),
-          ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                selectedName = '';
-              });
-              generateName();
-            },
-            child: Text('Pick Tea Maker'),
           ),
 
           Text(selectedName),
