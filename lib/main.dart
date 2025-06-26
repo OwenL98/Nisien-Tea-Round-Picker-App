@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:nisien_tea_round_picker_app/external/tea_round_picker.dart';
+import 'package:nisien_tea_round_picker_app/external/tea_picker/tea_round_picker.dart';
 import 'package:nisien_tea_round_picker_app/routing/navigation_bar.dart';
 
 void main() {

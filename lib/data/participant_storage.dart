@@ -34,17 +34,10 @@ class ParticipantListStorage {
     }
   }
 
-  Future<void> writeParticipantList(Participant participant) async {
+  Future<void> writeParticipantList(ParticipantList participantList) async {
     final file = await _localFile;
 
-    var storedParticipantList = await readParticipantList();
-
-    var x = storedParticipantList.participantList;
-    x.add(participant);
-
-    var list = ParticipantList(x);
-
-    var serialised = json.encode(list);
+    var serialised = json.encode(participantList);
 
     // Write the file
     await file.writeAsString(serialised);

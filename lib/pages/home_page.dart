@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nisien_tea_round_picker_app/data/participant_storage.dart';
 import 'package:nisien_tea_round_picker_app/domain/participant.dart';
-import 'package:nisien_tea_round_picker_app/external/tea_round_picker.dart';
+import 'package:nisien_tea_round_picker_app/external/tea_picker/tea_round_picker.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -30,8 +30,8 @@ class _HomePageBodyState extends State<HomePageBody> {
   var nameList = <String>[];
   var selectedName = '';
 
-  void pickTeaMaker() async {
-    var name = await picker(nameList);
+  void selectRandomParticipant() async {
+    var name = await participantSelector(nameList);
 
     setState(() {
       selectedName = name;
@@ -47,12 +47,10 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   void addParticipantToList(Participant participant) async {
-    await widget.participantListStorage.writeParticipantList(participant);
+    var storedList = await widget.participantListStorage.readParticipantList();
+    storedList.participantList.add(participant);
+    await widget.participantListStorage.writeParticipantList(storedList);
     readParticipantListFromStorage();
-  }
-
-  bool isListNotEmpty() {
-    return participantList.isNotEmpty;
   }
 
   @override
@@ -76,7 +74,7 @@ class _HomePageBodyState extends State<HomePageBody> {
           Expanded(
             flex: 5,
             child: Visibility(
-              visible: isListNotEmpty(),
+              visible: participantList.isNotEmpty,
               child: ListView.builder(
                 itemCount: participantList.length,
                 shrinkWrap: true,
@@ -101,7 +99,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                 setState(() {
                   selectedName = '';
                 });
-                pickTeaMaker();
+                selectRandomParticipant();
               },
               child: Text('Pick Tea Maker'),
             ),
@@ -112,7 +110,6 @@ class _HomePageBodyState extends State<HomePageBody> {
       ),
     );
   }
-}//TODO: enter one name at a time
+}//TODO: enter one name at a time (validation)
 //TODO: display list of names
 //TODO: remove name from list
-//TODO: 'generate' button to call api

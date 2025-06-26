@@ -8,7 +8,7 @@ part of 'participant.dart';
 
 Participant _$ParticipantFromJson(Map<String, dynamic> json) => Participant(
   name: json['name'] as String,
-  favouriteDrink: json['favouriteDrink'] as String,
+  favouriteDrink: json['favouriteDrink'] as String?,
 );
 
 Map<String, dynamic> _$ParticipantToJson(Participant instance) =>

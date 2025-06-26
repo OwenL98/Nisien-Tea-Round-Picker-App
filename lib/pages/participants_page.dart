@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nisien_tea_round_picker_app/common/debuncer.dart';
 import 'package:nisien_tea_round_picker_app/data/participant_storage.dart';
 import 'package:nisien_tea_round_picker_app/domain/participant.dart';
+import 'package:nisien_tea_round_picker_app/pages/participant_details_page.dart';
 
 class ParticipantsPage extends StatelessWidget {
   const ParticipantsPage({super.key});
@@ -41,8 +42,26 @@ class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
   }
 
   void addParticipantToList(Participant participant) async {
-    await widget.participantListStorage.writeParticipantList(participant);
+    var storedList = await widget.participantListStorage.readParticipantList();
+    storedList.participantList.add(participant);
+    await widget.participantListStorage.writeParticipantList(storedList);
+
     readParticipantListFromStorage();
+  }
+
+  void removeFromCompleted(Participant participant) async {
+    var storedList = await widget.participantListStorage.readParticipantList();
+    storedList.participantList.remove(participant);
+    widget.participantListStorage.writeParticipantList(storedList);
+
+    readParticipantListFromStorage();
+  }
+
+  Text? displayFavouriteDrink(Participant participant) {
+    if (participant.favouriteDrink != null) {
+      return Text(participant.favouriteDrink!);
+    }
+    return null;
   }
 
   @override
@@ -65,7 +84,28 @@ class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               itemBuilder: (context, index) {
                 final participant = participantList[index];
-                return ListTile(title: Text(participant.name));
+                return ListTile(
+                  title: Text(participant.name),
+                  subtitle: displayFavouriteDrink(participant),
+                  onTap:
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ParticipantDetailsPage(),
+                        ),
+                      ),
+                  trailing: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () => removeFromCompleted(participant),
+                        icon: Icon(Icons.delete_outline),
+                        iconSize: 20,
+                      ),
+                    ],
+                  ),
+                );
               },
             ),
           ),
