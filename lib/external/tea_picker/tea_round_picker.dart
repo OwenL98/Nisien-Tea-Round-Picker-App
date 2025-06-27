@@ -5,9 +5,10 @@ import 'package:nisien_tea_round_picker_app/external/tea_picker/models/picker_re
 
 Future<String> participantSelector(List<String> participants) async {
   var request = PickerRequest(participants: participants);
+  const String uri = 'https://10.0.2.2:7100/v1/random/participant';
 
   final response = await http_client.post(
-    Uri.parse('https://10.0.2.2:7100/v1/random/participant'),
+    Uri.parse(uri),
     body: jsonEncode(request),
     headers: {"Content-Type": "application/json"},
   );
