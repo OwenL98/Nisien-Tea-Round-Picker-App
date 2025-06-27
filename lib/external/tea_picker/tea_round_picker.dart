@@ -1,18 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http_client;
 import 'package:nisien_tea_round_picker_app/external/tea_picker/models/picker_request.dart';
 import 'package:nisien_tea_round_picker_app/external/tea_picker/models/picker_response.dart';
-
-//Enables localhost to be hit via http from emulator
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-  }
-}
 
 Future<String> participantSelector(List<String> participants) async {
   var request = PickerRequest(participants: participants);

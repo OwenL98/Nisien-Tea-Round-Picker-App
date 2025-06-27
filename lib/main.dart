@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:nisien_tea_round_picker_app/external/tea_picker/tea_round_picker.dart';
+import 'package:nisien_tea_round_picker_app/common/http_override.dart';
 import 'package:nisien_tea_round_picker_app/routing/navigation_bar.dart';
 
 void main() {
   //Enables localhost to be hit via http from emulator
-  HttpOverrides.global = MyHttpOverrides();
+  HttpOverrides.global = HttpOverride();
 
   runApp(const MyApp());
 }

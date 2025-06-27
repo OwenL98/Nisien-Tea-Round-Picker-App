@@ -10,7 +10,7 @@ class ParticipantsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(centerTitle: true, title: Text('Team')),
+      appBar: AppBar(centerTitle: true, title: Text('Team Members')),
       body: ParticipantsPageBody(
         participantListStorage: ParticipantListStorage(),
       ),
@@ -43,13 +43,17 @@ class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
 
   void addParticipantToList(Participant participant) async {
     var storedList = await widget.participantListStorage.readParticipantList();
+    if (storedList.participantList.contains(participant)) {
+      return;
+    }
+
     storedList.participantList.add(participant);
     await widget.participantListStorage.writeParticipantList(storedList);
 
     readParticipantListFromStorage();
   }
 
-  void removeFromCompleted(Participant participant) async {
+  void removeFromParticipant(Participant participant) async {
     var storedList = await widget.participantListStorage.readParticipantList();
     storedList.participantList.remove(participant);
     widget.participantListStorage.writeParticipantList(storedList);
@@ -91,7 +95,10 @@ class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
                       () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ParticipantDetailsPage(),
+                          builder:
+                              (context) => ParticipantDetailsPage(
+                                participant: participant,
+                              ),
                         ),
                       ),
                   trailing: Row(
@@ -99,7 +106,7 @@ class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        onPressed: () => removeFromCompleted(participant),
+                        onPressed: () => removeFromParticipant(participant),
                         icon: Icon(Icons.delete_outline),
                         iconSize: 20,
                       ),
@@ -144,6 +151,7 @@ class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
                 onChanged: (value) {
                   controller.text = value;
                 },
+                maxLength: 70,
               ),
             ),
           ),

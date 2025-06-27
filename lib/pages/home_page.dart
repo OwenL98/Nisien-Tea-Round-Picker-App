@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nisien_tea_round_picker_app/data/participant_storage.dart';
 import 'package:nisien_tea_round_picker_app/domain/participant.dart';
 import 'package:nisien_tea_round_picker_app/external/tea_picker/tea_round_picker.dart';
+import 'package:nisien_tea_round_picker_app/pages/participant_details_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -17,7 +18,6 @@ class HomePage extends StatelessWidget {
 
 class HomePageBody extends StatefulWidget {
   const HomePageBody({super.key, required this.participantListStorage});
-
   final ParticipantListStorage participantListStorage;
 
   @override
@@ -26,15 +26,14 @@ class HomePageBody extends StatefulWidget {
 
 class _HomePageBodyState extends State<HomePageBody> {
   List<Participant> participantList = [];
-
-  var nameList = <String>[];
-  var selectedName = '';
+  var selectedParticipantsList = <String>[];
+  var randomlySelectedParticipant = '';
 
   void selectRandomParticipant() async {
-    var name = await participantSelector(nameList);
+    var name = await participantSelector(selectedParticipantsList);
 
     setState(() {
-      selectedName = name;
+      randomlySelectedParticipant = name;
     });
   }
 
@@ -72,7 +71,7 @@ class _HomePageBodyState extends State<HomePageBody> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            flex: 5,
+            flex: 1,
             child: Visibility(
               visible: participantList.isNotEmpty,
               child: ListView.builder(
@@ -85,31 +84,55 @@ class _HomePageBodyState extends State<HomePageBody> {
                   return ListTile(
                     title: Text(participant.name),
                     onTap: () {
-                      nameList.add(participant.name);
+                      if (selectedParticipantsList.contains(participant.name)) {
+                        selectedParticipantsList.remove(participant.name);
+                      } else {
+                        selectedParticipantsList.add(participant.name);
+                      }
                       setState(() {});
                     },
+                    onLongPress:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => ParticipantDetailsPage(
+                                  participant: participant,
+                                ),
+                          ),
+                        ),
                   );
                 },
               ),
             ),
           ),
           Expanded(
-            child: TextButton(
-              onPressed: () {
-                setState(() {
-                  selectedName = '';
-                });
-                selectRandomParticipant();
-              },
-              child: Text('Pick Tea Maker'),
+            flex: 1,
+            child: Visibility(
+              visible: selectedParticipantsList.isNotEmpty,
+              child: SingleChildScrollView(
+                child: Text('Selected: ${selectedParticipantsList.join(', ')}'),
+              ),
             ),
           ),
-
-          Text(selectedName),
+          Expanded(
+            flex: 1,
+            child:
+                selectedParticipantsList.length > 1
+                    ? TextButton(
+                      onPressed: () {
+                        setState(() {
+                          randomlySelectedParticipant = '';
+                        });
+                        selectRandomParticipant();
+                      },
+                      child: Text('Pick Tea Maker'),
+                    )
+                    : Text('Add and select team members'),
+          ),
+          Text(randomlySelectedParticipant),
         ],
       ),
     );
   }
-}//TODO: enter one name at a time (validation)
-//TODO: display list of names
-//TODO: remove name from list
+}
