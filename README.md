@@ -29,4 +29,6 @@ This will load up the emulator, this can sometimes take a few moments
 `flutter run`  
 This should run the application on the emulator. If you get an option to select which device to run on, select the number associated to the android emulator.
 
-This is now running and you can use the app. NOTE: in order to `Pick Tea Maker` button to pick someone to make the tea you will need to run the [Back End Application](https://github.com/OwenL98/Nisien-Tea-Round-Picker) in order for the api call to work.
+This is now running and you can use the app.
+
+NOTE: The [Back End Application](https://github.com/OwenL98/Nisien-Tea-Round-Picker) will need to be run simultaneously for the 'Pick Tea maker' button to call the API and return a person to make the tea.
