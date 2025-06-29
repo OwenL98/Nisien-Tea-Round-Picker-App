@@ -76,6 +76,13 @@ class _HomePageBodyState extends State<HomePageBody> {
     return text;
   }
 
+  Text? displayParticipantList() {
+    if (selectedParticipantsList.isNotEmpty) {
+      return Text(generateDrinkList());
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -155,7 +162,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                               style: TextStyle(color: Colors.red, fontSize: 50),
                               softWrap: true,
                             )
-                            : Text(generateDrinkList()),
+                            : displayParticipantList(),
                   ),
                 ),
                 Row(
