@@ -10,4 +10,6 @@ class PickerResponse {
 
   factory PickerResponse.fromJson(Map<String, dynamic> json) =>
       _$PickerResponseFromJson(json);
+
+  toJson() => _$PickerResponseToJson(this)['name'];
 }

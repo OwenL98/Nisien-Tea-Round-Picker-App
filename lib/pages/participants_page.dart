@@ -29,32 +29,34 @@ class ParticipantsPageBody extends StatefulWidget {
 
 class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
   final controller = TextEditingController();
-  final Debouncer _debouncer = Debouncer(milliseconds: 500);
-  final FocusNode _focusNode = FocusNode();
-  List<Participant> participantList = [];
+  final Debouncer debouncer = Debouncer(milliseconds: 500);
+  final FocusNode focusNode = FocusNode();
+  List<Participant> participantList = List.empty();
 
-  void readParticipantListFromStorage() async {
-    var storedParticipantList =
-        await widget.participantListStorage.readParticipantList();
-    setState(() {
-      participantList = storedParticipantList.participantList;
+  void readParticipantListFromStorage() {
+    widget.participantListStorage.readParticipantList().then((value) {
+      setState(() {
+        participantList = value.participantList;
+      });
     });
   }
 
   void addParticipantToList(Participant participant) async {
-    var storedList = await widget.participantListStorage.readParticipantList();
-    if (storedList.participantList.contains(participant)) {
+    if (participantList.contains(participant)) {
       return;
     }
 
-    storedList.participantList.add(participant);
-    await widget.participantListStorage.writeParticipantList(storedList);
+    var storedList = await widget.participantListStorage.readParticipantList();
 
+    storedList.participantList.add(participant);
+    widget.participantListStorage.writeParticipantList(storedList);
+    setState(() {});
     readParticipantListFromStorage();
   }
 
   void removeFromParticipant(Participant participant) async {
     var storedList = await widget.participantListStorage.readParticipantList();
+
     storedList.participantList.remove(participant);
     widget.participantListStorage.writeParticipantList(storedList);
 
@@ -62,16 +64,29 @@ class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
   }
 
   Text? displayFavouriteDrink(Participant participant) {
-    if (participant.favouriteDrink != null) {
+    if (participant.favouriteDrink != null ||
+        participant.favouriteDrink != '') {
       return Text(participant.favouriteDrink!);
     }
     return null;
   }
 
+  bool isValid() {
+    if (controller.value.text.trim().isEmpty) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   @override
   void initState() {
-    readParticipantListFromStorage();
     super.initState();
+    widget.participantListStorage.readParticipantList().then((value) {
+      setState(() {
+        participantList = value.participantList;
+      });
+    });
   }
 
   @override
@@ -100,7 +115,9 @@ class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
                                 participant: participant,
                               ),
                         ),
-                      ),
+                      ).then((_) {
+                        setState(() {});
+                      }),
                   trailing: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
@@ -125,7 +142,7 @@ class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
                 decoration: InputDecoration(
                   prefixIcon: IconButton(
                     onPressed:
-                        () => _debouncer.run(() {
+                        () => debouncer.run(() {
                           addParticipantToList(
                             Participant(
                               name: controller.text,
@@ -137,16 +154,17 @@ class __ParticipantsPageBodyState extends State<ParticipantsPageBody> {
                     icon: Icon(Icons.check),
                   ),
                   labelText: 'Enter team member name',
+                  errorText: isValid() ? 'invalid' : null,
                 ),
                 onSubmitted: (value) {
-                  _debouncer.run(() {
+                  debouncer.run(() {
                     addParticipantToList(
                       Participant(name: controller.text, favouriteDrink: ''),
                     );
                     controller.text = '';
                   });
                 },
-                focusNode: _focusNode,
+                focusNode: focusNode,
                 keyboardType: TextInputType.text,
                 onChanged: (value) {
                   controller.text = value;

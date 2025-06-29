@@ -4,7 +4,7 @@ import 'package:nisien_tea_round_picker_app/common/http_override.dart';
 import 'package:nisien_tea_round_picker_app/routing/navigation_bar.dart';
 
 void main() {
-  //Enables localhost to be hit via http from emulator
+  //Enables localhost to be hit from emulator
   HttpOverrides.global = HttpOverride();
 
   runApp(const MyApp());

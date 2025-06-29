@@ -36,26 +36,24 @@ class ParticipantDetailsPageBody extends StatefulWidget {
 class _ParticipantDetailsPageBodyState
     extends State<ParticipantDetailsPageBody> {
   final controller = TextEditingController();
-  final Debouncer _debouncer = Debouncer(milliseconds: 500);
-  final FocusNode _focusNode = FocusNode();
+  final Debouncer debouncer = Debouncer(milliseconds: 500);
+  final FocusNode focusNode = FocusNode();
+  var displayController = false;
 
   Text displayFavouriteDrink() {
     var favouriteDrink = widget.participantDetails.favouriteDrink;
-    var isEmpty = favouriteDrink == '';
-    if (favouriteDrink == null || isEmpty) {
+    if (favouriteDrink == null || favouriteDrink.isEmpty) {
       return Text('no favourite drink set');
     }
     return Text(favouriteDrink);
   }
-
-  var displayController = false;
 
   void addFavouriteDrink(String favouriteDrink) async {
     var storedParticipantList =
         await widget.participantListStorage.readParticipantList();
 
     var indexOfParticipant = storedParticipantList.participantList.indexWhere(
-      (element) => element.name == widget.participantDetails.name,
+      (participant) => participant.name == widget.participantDetails.name,
     );
 
     storedParticipantList.participantList.removeAt(indexOfParticipant);
@@ -66,9 +64,7 @@ class _ParticipantDetailsPageBodyState
       ),
     );
 
-    await widget.participantListStorage.writeParticipantList(
-      storedParticipantList,
-    );
+    widget.participantListStorage.writeParticipantList(storedParticipantList);
 
     setState(() {
       widget.participantDetails.favouriteDrink = favouriteDrink;
@@ -120,7 +116,7 @@ class _ParticipantDetailsPageBodyState
               decoration: InputDecoration(
                 prefixIcon: IconButton(
                   onPressed:
-                      () => _debouncer.run(() {
+                      () => debouncer.run(() {
                         addFavouriteDrink(controller.text);
                         controller.text = '';
                         displayController = false;
@@ -131,14 +127,14 @@ class _ParticipantDetailsPageBodyState
                 labelText: 'Enter favourite drink',
               ),
               onSubmitted: (value) {
-                _debouncer.run(() {
+                debouncer.run(() {
                   addFavouriteDrink(controller.text);
                   controller.text = '';
                   displayController = false;
                   setState(() {});
                 });
               },
-              focusNode: _focusNode,
+              focusNode: focusNode,
               keyboardType: TextInputType.text,
               onChanged: (value) {
                 controller.text = value;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nisien_tea_round_picker_app/data/history_storage.dart';
 import 'package:nisien_tea_round_picker_app/data/participant_storage.dart';
 import 'package:nisien_tea_round_picker_app/domain/participant.dart';
 import 'package:nisien_tea_round_picker_app/external/tea_picker/tea_round_picker.dart';
@@ -11,51 +12,78 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(centerTitle: true, title: Text('Nisien Tea Round Picker')),
-      body: HomePageBody(participantListStorage: ParticipantListStorage()),
+      body: HomePageBody(
+        participantListStorage: ParticipantListStorage(),
+        historyStorage: HistoryStorage(),
+      ),
     );
   }
 }
 
 class HomePageBody extends StatefulWidget {
-  const HomePageBody({super.key, required this.participantListStorage});
+  const HomePageBody({
+    super.key,
+    required this.participantListStorage,
+    required this.historyStorage,
+  });
+
   final ParticipantListStorage participantListStorage;
+  final HistoryStorage historyStorage;
 
   @override
   State<HomePageBody> createState() => _HomePageBodyState();
 }
 
 class _HomePageBodyState extends State<HomePageBody> {
-  List<Participant> participantList = [];
-  var selectedParticipantsList = <String>[];
-  var randomlySelectedParticipant = '';
+  List<Participant> participantList = List.empty();
+  List<Participant> selectedParticipantsList = <Participant>[];
+  Participant selectedParticipant = Participant(name: '');
+  var isSelectedParticipantSet = false;
 
   void selectRandomParticipant() async {
     var name = await participantSelector(selectedParticipantsList);
 
-    setState(() {
-      randomlySelectedParticipant = name;
-    });
+    selectedParticipant = participantList.firstWhere((e) => e.name == name);
+    isSelectedParticipantSet = true;
+
+    addToHistory(selectedParticipant);
+    setState(() {});
   }
 
-  void readParticipantListFromStorage() async {
-    var storedParticipantList =
-        await widget.participantListStorage.readParticipantList();
-    setState(() {
-      participantList = storedParticipantList.participantList;
-    });
+  void addToHistory(Participant participantName) async {
+    var storedHistory = await widget.historyStorage.readHistory();
+
+    storedHistory.participantList.add(participantName);
+
+    widget.historyStorage.writeHistory(storedHistory);
   }
 
-  void addParticipantToList(Participant participant) async {
-    var storedList = await widget.participantListStorage.readParticipantList();
-    storedList.participantList.add(participant);
-    await widget.participantListStorage.writeParticipantList(storedList);
-    readParticipantListFromStorage();
+  String generateDrinkList() {
+    final buffer = StringBuffer();
+
+    for (var participant in selectedParticipantsList) {
+      var favouriteDrink =
+          participant.favouriteDrink == ''
+              ? 'No favourite drink'
+              : participant.favouriteDrink;
+
+      buffer.write('${participant.name} : $favouriteDrink');
+      buffer.writeln();
+    }
+    var text = buffer.toString();
+    buffer.clear();
+
+    return text;
   }
 
   @override
   void initState() {
-    readParticipantListFromStorage();
     super.initState();
+    widget.participantListStorage.readParticipantList().then((value) {
+      setState(() {
+        participantList = value.participantList;
+      });
+    });
   }
 
   @override
@@ -71,7 +99,7 @@ class _HomePageBodyState extends State<HomePageBody> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            flex: 1,
+            flex: 8,
             child: Visibility(
               visible: participantList.isNotEmpty,
               child: ListView.builder(
@@ -83,11 +111,16 @@ class _HomePageBodyState extends State<HomePageBody> {
                   final participant = participantList[index];
                   return ListTile(
                     title: Text(participant.name),
+                    subtitle:
+                        isSelectedParticipantSet
+                            ? Text('${participant.favouriteDrink}')
+                            : null,
+                    enabled: !isSelectedParticipantSet,
                     onTap: () {
-                      if (selectedParticipantsList.contains(participant.name)) {
-                        selectedParticipantsList.remove(participant.name);
+                      if (selectedParticipantsList.contains(participant)) {
+                        selectedParticipantsList.remove(participant);
                       } else {
-                        selectedParticipantsList.add(participant.name);
+                        selectedParticipantsList.add(participant);
                       }
                       setState(() {});
                     },
@@ -106,31 +139,62 @@ class _HomePageBodyState extends State<HomePageBody> {
               ),
             ),
           ),
-          Expanded(
-            flex: 1,
-            child: Visibility(
-              visible: selectedParticipantsList.isNotEmpty,
-              child: SingleChildScrollView(
-                child: Text('Selected: ${selectedParticipantsList.join(', ')}'),
-              ),
+          Visibility(
+            visible: selectedParticipantsList.isNotEmpty,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 150,
+                  child: SingleChildScrollView(
+                    child:
+                        isSelectedParticipantSet
+                            ? Text(
+                              selectedParticipant.name,
+                              style: TextStyle(color: Colors.red, fontSize: 50),
+                              softWrap: true,
+                            )
+                            : Text(generateDrinkList()),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Visibility(
+                      visible: selectedParticipant != Participant(name: ''),
+                      child: Expanded(
+                        flex: 1,
+                        child: TextButton(
+                          onPressed:
+                              () => setState(() {
+                                selectedParticipant = Participant(name: '');
+                                selectedParticipantsList.clear();
+                                isSelectedParticipantSet = false;
+                              }),
+                          child: Text('Reset'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          Expanded(
-            flex: 1,
-            child:
-                selectedParticipantsList.length > 1
-                    ? TextButton(
-                      onPressed: () {
-                        setState(() {
-                          randomlySelectedParticipant = '';
-                        });
-                        selectRandomParticipant();
-                      },
-                      child: Text('Pick Tea Maker'),
-                    )
-                    : Text('Add and select team members'),
+          Visibility(
+            visible: !isSelectedParticipantSet,
+            child: Expanded(
+              flex: 2,
+              child:
+                  selectedParticipantsList.length > 1
+                      ? TextButton(
+                        onPressed: () {
+                          selectRandomParticipant();
+                        },
+                        child: Text('Pick Tea Maker'),
+                      )
+                      : Text('Add and select team members'),
+            ),
           ),
-          Text(randomlySelectedParticipant),
         ],
       ),
     );

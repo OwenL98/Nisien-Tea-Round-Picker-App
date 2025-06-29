@@ -10,7 +10,7 @@ PickerRequest _$PickerRequestFromJson(Map<String, dynamic> json) =>
     PickerRequest(
       participants:
           (json['participants'] as List<dynamic>)
-              .map((e) => e as String)
+              .map((e) => e as Participant)
               .toList(),
     );
 

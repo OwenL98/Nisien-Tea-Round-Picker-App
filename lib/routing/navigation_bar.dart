@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nisien_tea_round_picker_app/pages/home_page.dart';
 import 'package:nisien_tea_round_picker_app/pages/participants_page.dart';
-import 'package:nisien_tea_round_picker_app/pages/selected_history_page.dart';
+import 'package:nisien_tea_round_picker_app/pages/history_page.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
@@ -36,7 +36,7 @@ class _MyNavBarState extends State<NavBar> {
           <Widget>[
             HomePage(),
             ParticipantsPage(),
-            SelectedHistoryPage(),
+            HistoryPage(),
           ][currentPageIndex],
     );
   }
