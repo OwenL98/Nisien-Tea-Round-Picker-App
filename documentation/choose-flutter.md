@@ -1,4 +1,4 @@
-# Choose Mobile App Supporting With Back End Service
+# Choose Mobile App Supported With Back End Service
 
 ## Context
 
@@ -18,7 +18,7 @@ Create multiple projects, front end with flutter and back end with C#
 
 A mobile app allows for easy portability of the tea maker along with the abilty to store the relavent information locally on the device. A supporting back end application allows for a separation of concerns regarding the main logic. In addition further logic can be added without relying on the front end application to do the heavy lifting which could harm performance.
 
-Using flutter enables a front end application to be created without the steep learning curve of learning react from scratch. A foundational knowledge of flutter was enough to provide confidence in producing both a front end application and back end application.
+Using flutter enables a front end application to be created without the steep learning curve of learning react from scratch. A foundational knowledge of flutter was enough to provide confidence in producing a front end application supporded by a back end application written in C#.
 
 ## Consequences
 
